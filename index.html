@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Festora Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0f;--surface:#13131a;--card:#1a1a24;--border:#2a2a3a;--accent:#ff5c35;--accent2:#ffb347;--text:#f0ede8;--muted:#7a7a8a}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;flex-direction:column}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.4}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(10,10,15,.95);backdrop-filter:blur(20px);flex-shrink:0}
+.header-left{display:flex;align-items:center;gap:1rem}
+.back-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:2rem;font-size:.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;text-decoration:none;display:flex;align-items:center;gap:.4rem}
+.back-btn:hover{border-color:var(--accent);color:var(--accent)}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.1em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none}
+.header-center{display:flex;align-items:center;gap:.8rem}
+.bot-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 0 20px rgba(255,92,53,.3)}
+.bot-info{display:flex;flex-direction:column}
+.bot-name{font-weight:700;font-size:1rem}
+.bot-status{font-size:.75rem;color:#4ade80;display:flex;align-items:center;gap:.3rem}
+.bot-status::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.header-right{display:flex;align-items:center;gap:.8rem}
+.capabilities-btn{background:rgba(255,92,53,.1);border:1px solid rgba(255,92,53,.3);color:var(--accent);padding:.4rem .9rem;border-radius:2rem;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.capabilities-btn:hover{background:rgba(255,92,53,.2)}
+
+/* MAIN LAYOUT */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:280px;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--surface);flex-shrink:0}
+.sidebar-title{padding:1rem 1.2rem;font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid var(--border)}
+.quick-actions{padding:.8rem;display:flex;flex-direction:column;gap:.5rem;overflow-y:auto;flex:1}
+.qa-group-title{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:.4rem .4rem .2rem}
+.qa-btn{background:var(--card);border:1px solid var(--border);color:var(--text);padding:.7rem 1rem;border-radius:.8rem;font-size:.82rem;cursor:pointer;text-align:left;transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1.4}
+.qa-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(255,92,53,.05)}
+.qa-btn .qa-icon{margin-right:.5rem}
+
+/* CHAT AREA */
+.chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.messages{flex:1;overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:1rem;scroll-behavior:smooth}
+.messages::-webkit-scrollbar{width:4px}
+.messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* MESSAGES */
+.msg-row{display:flex;gap:.8rem;animation:msgIn .3s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.msg-row.user{flex-direction:row-reverse}
+.msg-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+.msg-avatar.bot{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.msg-avatar.user{background:var(--card);border:1px solid var(--border)}
+.msg-content{max-width:70%;display:flex;flex-direction:column;gap:.3rem}
+.msg-row.user .msg-content{align-items:flex-end}
+.msg-bubble{padding:.85rem 1.1rem;border-radius:1.2rem;font-size:.88rem;line-height:1.6}
+.msg-bubble.bot{background:var(--card);border:1px solid var(--border);border-bottom-left-radius:.3rem}
+.msg-bubble.user{background:var(--accent);color:#fff;border-bottom-right-radius:.3rem}
+.msg-time{font-size:.68rem;color:var(--muted);padding:0 .3rem}
+
+/* EVENT CARDS IN CHAT */
+.chat-events{display:flex;flex-direction:column;gap:.6rem;margin-top:.5rem}
+.chat-event-card{background:var(--surface);border:1px solid var(--border);border-radius:.8rem;padding:.8rem 1rem;cursor:pointer;transition:all .2s;text-decoration:none;display:block;color:inherit}
+.chat-event-card:hover{border-color:var(--accent);transform:translateX(4px)}
+.ce-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.3rem}
+.ce-title{font-weight:600;font-size:.88rem;line-height:1.3}
+.ce-price{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--accent);white-space:nowrap}
+.ce-meta{font-size:.75rem;color:var(--muted);display:flex;gap:1rem;flex-wrap:wrap}
+.ce-badge{background:rgba(255,92,53,.15);color:var(--accent);padding:.15rem .5rem;border-radius:1rem;font-size:.68rem;font-weight:600;text-transform:uppercase}
+
+/* BOOKING CARD IN CHAT */
+.chat-booking-card{background:var(--surface);border:1px solid var(--border);border-radius:.8rem;padding:.8rem 1rem;margin-top:.3rem}
+.cb-title{font-weight:600;font-size:.88rem;margin-bottom:.4rem;color:var(--accent2)}
+.cb-row{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);padding:.15rem 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.cb-row:last-child{border-bottom:none}
+.cb-row span:last-child{color:var(--text);font-weight:500}
+
+/* TYPING */
+.typing-bubble{background:var(--card);border:1px solid var(--border);border-radius:1.2rem;border-bottom-left-radius:.3rem;padding:.85rem 1.1rem;display:flex;align-items:center;gap:4px}
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:td 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+
+/* INPUT AREA */
+.input-area{padding:1rem 1.5rem;border-top:1px solid var(--border);background:rgba(10,10,15,.95);flex-shrink:0}
+.input-row{display:flex;gap:.8rem;align-items:flex-end}
+.input-box{flex:1;background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:.75rem 1.1rem;color:var(--text);font-size:.9rem;font-family:'DM Sans',sans-serif;outline:none;resize:none;max-height:120px;min-height:44px;transition:border-color .2s;line-height:1.5}
+.input-box:focus{border-color:var(--accent)}
+.input-box::placeholder{color:var(--muted)}
+.send-btn{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all .2s;flex-shrink:0;color:#fff}
+.send-btn:hover{transform:scale(1.1);box-shadow:0 4px 20px rgba(255,92,53,.4)}
+.send-btn:disabled{opacity:.5;transform:none;cursor:not-allowed}
+.input-hint{font-size:.72rem;color:var(--muted);margin-top:.5rem;text-align:center}
+
+/* WELCOME SCREEN */
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:2rem;text-align:center}
+.welcome-icon{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 1.5rem;box-shadow:0 0 40px rgba(255,92,53,.3);animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.welcome-title{font-family:'DM Serif Display',serif;font-size:1.8rem;margin-bottom:.5rem}
+.welcome-sub{color:var(--muted);font-size:.9rem;max-width:400px;line-height:1.7;margin-bottom:2rem}
+.welcome-chips{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;max-width:500px}
+.chip{background:var(--card);border:1px solid var(--border);color:var(--text);padding:.5rem 1rem;border-radius:2rem;font-size:.82rem;cursor:pointer;transition:all .2s}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+
+/* STATUS BAR */
+.status-bar{background:rgba(74,222,128,.08);border-top:1px solid rgba(74,222,128,.15);padding:.4rem 1.5rem;font-size:.72rem;color:#4ade80;display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.status-bar.loading{color:var(--accent2);background:rgba(255,179,71,.08);border-color:rgba(255,179,71,.15)}
+
+@media(max-width:768px){.sidebar{display:none}.msg-content{max-width:85%}}
+
+/* AUTH */
+.nav-cta{background:var(--accent);color:#fff;padding:.45rem 1.2rem;border-radius:2rem;font-weight:600;font-size:.82rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.nav-cta:hover{background:#ff7a5a}
+.nav-signout{background:none;border:1px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:2rem;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.nav-signout:hover{border-color:var(--accent);color:var(--accent)}
+.nav-avatar{width:32px;height:32px;border-radius:50%;border:2px solid var(--accent);object-fit:cover}
+.nav-name{font-size:.82rem;font-weight:500;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.auth-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);z-index:1000;display:none;align-items:center;justify-content:center}
+.auth-modal-overlay.open{display:flex}
+.auth-modal{background:var(--card);border:1px solid var(--border);border-radius:1.5rem;width:100%;max-width:380px;padding:2.5rem;text-align:center;position:relative;animation:popIn .3s ease}
+@keyframes popIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.auth-logo{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.1em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.3rem}
+.auth-title{font-family:'DM Serif Display',serif;font-size:1.4rem;margin-bottom:.3rem}
+.auth-sub{color:var(--muted);font-size:.85rem;margin-bottom:1.8rem;line-height:1.6}
+.google-btn{width:100%;background:#fff;color:#1a1a1a;border:none;padding:.85rem 1.5rem;border-radius:.8rem;font-size:.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.8rem;transition:all .2s;font-family:'DM Sans',sans-serif}
+.google-btn:hover{background:#f5f5f5;transform:translateY(-2px)}
+.google-btn svg{width:20px;height:20px;flex-shrink:0}
+.auth-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer}
+.auth-error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#f87171;padding:.6rem 1rem;border-radius:.5rem;font-size:.8rem;margin-bottom:1rem;display:none}
+.auth-note{font-size:.72rem;color:var(--muted);margin-top:1rem;line-height:1.6}
+.sidebar-user{padding:.8rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.7rem}
+.sidebar-user-info{flex:1;min-width:0}
+.sidebar-user-name{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-user-email{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-user-img{width:36px;height:36px;border-radius:50%;border:2px solid var(--accent);flex-shrink:0}
+.sidebar-signin-btn{width:100%;background:var(--accent);color:#fff;border:none;padding:.7rem;border-radius:.7rem;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.sidebar-signin-btn:hover{background:#ff7a5a}
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <a href="index.html" class="back-btn">&#8592; Back</a>
+    <a href="index.html" class="logo">Festora</a>
+  </div>
+  <div class="header-center">
+    <div class="bot-avatar">&#127903;</div>
+    <div class="bot-info">
+      <div class="bot-name">Festora Assistant</div>
+      <div class="bot-status">Online & Ready</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="capabilities-btn" onclick="showCapabilities()">&#9889; What can I do?</button>
+    <div id="navUser"><button class="nav-cta" onclick="openAuthModal()">Sign In</button></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div id="sidebarUser" class="sidebar-user"><button class="sidebar-signin-btn" onclick="openAuthModal()">&#128100; Sign In with Google</button></div>
+    <div class="sidebar-title">&#9889; Quick Commands</div>
+    <div class="quick-actions">
+
+      <div class="qa-group-title">&#127903; Events</div>
+      <button class="qa-btn" onclick="quickAsk('Show me all upcoming events')"><span class="qa-icon">&#127916;</span>All Events</button>
+      <button class="qa-btn" onclick="quickAsk('Show me music events')"><span class="qa-icon">&#127925;</span>Music Events</button>
+      <button class="qa-btn" onclick="quickAsk('Show me comedy events')"><span class="qa-icon">&#128514;</span>Comedy Events</button>
+      <button class="qa-btn" onclick="quickAsk('Show me sports events')"><span class="qa-icon">&#9917;</span>Sports Events</button>
+      <button class="qa-btn" onclick="quickAsk('Show me festival events')"><span class="qa-icon">&#127914;</span>Festival Events</button>
+      <button class="qa-btn" onclick="quickAsk('Show me tech events')"><span class="qa-icon">&#128187;</span>Tech Events</button>
+
+      <div class="qa-group-title">&#127903; Bookings</div>
+      <button class="qa-btn" onclick="quickAsk('Show my recent bookings')"><span class="qa-icon">&#128203;</span>My Bookings</button>
+      <button class="qa-btn" onclick="quickAsk('How do I view my tickets?')"><span class="qa-icon">&#127903;</span>View Tickets</button>
+
+      <div class="qa-group-title">&#128172; Help</div>
+      <button class="qa-btn" onclick="quickAsk('How do I book a ticket?')"><span class="qa-icon">&#10067;</span>How to Book</button>
+      <button class="qa-btn" onclick="quickAsk('What payment methods are available?')"><span class="qa-icon">&#128179;</span>Payment Methods</button>
+      <button class="qa-btn" onclick="quickAsk('What are VIP ticket benefits?')"><span class="qa-icon">&#11088;</span>VIP Benefits</button>
+      <button class="qa-btn" onclick="quickAsk('How do I get my ticket after booking?')"><span class="qa-icon">&#128231;</span>Get E-Pass</button>
+      <button class="qa-btn" onclick="quickAsk('Which events have seats available?')"><span class="qa-icon">&#128065;</span>Available Seats</button>
+      <button class="qa-btn" onclick="quickAsk('What is the cheapest event?')"><span class="qa-icon">&#128176;</span>Best Price</button>
+
+    </div>
+  </div>
+
+  <!-- CHAT AREA -->
+  <div class="chat-area">
+    <div class="messages" id="messages">
+      <!-- Welcome screen shown initially -->
+      <div class="welcome" id="welcomeScreen">
+        <div class="welcome-icon">&#127903;</div>
+        <div class="welcome-title">Hi! I'm Festora Assistant</div>
+        <div class="welcome-sub">I have live access to all Festora events, bookings and data. Ask me anything — I'll fetch the real information for you!</div>
+        <div class="welcome-chips">
+          <div class="chip" onclick="quickAsk('Show me all upcoming events')">&#127916; Show all events</div>
+          <div class="chip" onclick="quickAsk('Which events are cheapest?')">&#128176; Cheapest tickets</div>
+          <div class="chip" onclick="quickAsk('Show me events in Mumbai')">&#128205; Events in Mumbai</div>
+          <div class="chip" onclick="quickAsk('Which events have less than 100 seats left?')">&#128065; Low seats</div>
+          <div class="chip" onclick="quickAsk('Tell me about Arijit Singh Live')">&#127925; Arijit Singh Live</div>
+          <div class="chip" onclick="quickAsk('How do I book a ticket on Festora?')">&#10067; How to book</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+      &#9679; Connected to Festora — Firebase live data ready
+    </div>
+
+    <div class="input-area">
+      <div class="input-row">
+        <textarea class="input-box" id="inputBox" placeholder="Ask me about events, bookings, prices, venues…" rows="1"
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">&#10148;</button>
+      </div>
+      <div class="input-hint">Ask in plain English — I fetch live data from Festora's database</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── FESTORA EVENTS DATA (live from Firebase + local fallback) ─
+var EVENTS = [
+  {id:'ev1',title:"Arijit Singh Live",category:"music",date:"Sat, 22 Mar 2026",time:"7:00 PM",venue:"DY Patil Stadium, Mumbai",price:1499,seats:342,img:"https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&q=80",description:"An enchanting evening with the voice of a generation. Arijit Singh performs his greatest hits live with a 40-piece orchestra.",tickets:[{name:"General",price:1499},{name:"Premium",price:2999},{name:"VIP",price:5999}]},
+  {id:'ev2',title:"Sunburn Arena ft. Martin Garrix",category:"music",date:"Sun, 29 Mar 2026",time:"6:00 PM",venue:"MMRDA Grounds, BKC, Mumbai",price:2499,seats:1200,img:"https://images.unsplash.com/photo-1506157786151-b8491531f063?w=400&q=80",description:"The world's biggest DJ brings his signature sound to Mumbai.",tickets:[{name:"General",price:2499},{name:"Premium",price:4999},{name:"VIP",price:9999}]},
+  {id:'ev3',title:"Zakir Khan Comedy Show",category:"comedy",date:"Fri, 20 Mar 2026",time:"8:00 PM",venue:"JLN Stadium, New Delhi",price:799,seats:89,img:"https://images.unsplash.com/photo-1527224538127-2104bb71c51b?w=400&q=80",description:"India's favorite comedian is back with his brand new solo show.",tickets:[{name:"Standard",price:799},{name:"Gold",price:1499}]},
+  {id:'ev4',title:"Lollapalooza India 2026",category:"festival",date:"Sat-Sun, 5-6 Apr 2026",time:"2:00 PM",venue:"Mahalaxmi Racecourse, Mumbai",price:3999,seats:5600,img:"https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&q=80",description:"Two days of world-class music, art, and culture across 4 stages.",tickets:[{name:"Day Pass",price:3999},{name:"Weekend Pass",price:6999},{name:"VIP Weekend",price:14999}]},
+  {id:'ev5',title:"IPL: MI vs CSK",category:"sports",date:"Wed, 18 Mar 2026",time:"7:30 PM",venue:"Wankhede Stadium, Mumbai",price:999,seats:28,img:"https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=400&q=80",description:"The greatest rivalry in cricket. The most electric atmosphere in T20.",tickets:[{name:"East Stand",price:999},{name:"North Stand",price:2499},{name:"Corporate Box",price:9999}]},
+  {id:'ev6',title:"Google I/O Extended India",category:"tech",date:"Thu, 26 Mar 2026",time:"10:00 AM",venue:"Bangalore International Centre",price:499,seats:210,img:"https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80",description:"India's biggest developer event. Keynotes, workshops, networking.",tickets:[{name:"General",price:499},{name:"Workshop Pass",price:1499}]}
+];
+
+var bookings = [];
+var isTyping = false;
+
+
+// ── AUTH FUNCTIONS ────────────────────────────────────────────
+function openAuthModal(){ document.getElementById('authModalOverlay').classList.add('open'); }
+function closeAuthModal(){ document.getElementById('authModalOverlay').classList.remove('open'); }
+
+window.signInWithGoogle = function(){ openAuthModal(); }; // stub until Firebase loads
+
+function renderNavUser(user){
+  var el = document.getElementById('navUser');
+  var sidebar = document.getElementById('sidebarUser');
+  if(user){
+    el.innerHTML = '<span class="nav-name">' + user.displayName.split(' ')[0] + '</span>' +
+      '<img class="nav-avatar" src="' + user.photoURL + '" alt="' + user.displayName + '"/>' +
+      '<button class="nav-signout" onclick="window._signOut()">Sign Out</button>';
+    sidebar.innerHTML = '<img class="sidebar-user-img" src="' + user.photoURL + '"/>' +
+      '<div class="sidebar-user-info">' +
+        '<div class="sidebar-user-name">' + user.displayName + '</div>' +
+        '<div class="sidebar-user-email">' + user.email + '</div>' +
+      '</div>';
+  } else {
+    el.innerHTML = '<button class="nav-cta" onclick="openAuthModal()">Sign In</button>';
+    sidebar.innerHTML = '<button class="sidebar-signin-btn" onclick="openAuthModal()">&#128100; Sign In with Google</button>';
+  }
+}
+
+// ── FIREBASE INIT ─────────────────────────────────────────────
+(async function(){
+  try {
+    setStatus('loading', '&#9679; Connecting to Firebase...');
+    var m1 = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    var m2 = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    var m3 = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+
+    var app = m1.initializeApp({
+      apiKey:"AIzaSyCtCp5SwWLwnD-rtpllvhc-RmbxUhvAy9c",
+      authDomain:"festora-6bac8.firebaseapp.com",
+      projectId:"festora-6bac8",
+      storageBucket:"festora-6bac8.firebasestorage.app",
+      messagingSenderId:"909677087964",
+      appId:"1:909677087964:web:1f9e5a1df7b546d84a7819"
+    });
+
+    var db = m3.getFirestore(app);
+    var auth = m2.getAuth(app);
+
+    // Load events from Firestore
+    try {
+      var snap = await m3.getDocs(m3.collection(db, 'events'));
+      if(snap.docs.length > 0){
+        EVENTS = snap.docs.map(function(d){ return d.data(); });
+        setStatus('ok', '&#9679; Connected — Live Firestore data loaded (' + EVENTS.length + ' events)');
+      } else {
+        setStatus('ok', '&#9679; Connected — Using local event data');
+      }
+    } catch(e){ setStatus('ok', '&#9679; Connected — Using local event data'); }
+
+    // Auth state - load user bookings on sign in
+    window.signInWithGoogle = async function(){
+      var e = document.getElementById('authError'); e.style.display='none';
+      try { await m2.signInWithPopup(auth, new m2.GoogleAuthProvider()); closeAuthModal(); }
+      catch(err){ e.textContent = err.message; e.style.display='block'; }
+    };
+    window._signOut = async function(){
+      await m2.signOut(auth);
+      bookings = [];
+      setStatus('ok', '&#9679; Connected — Signed out');
+    };
+    m2.onAuthStateChanged(auth, async function(user){
+      renderNavUser(user);
+      if(user){
+        closeAuthModal();
+        try {
+          var bSnap = await m3.getDocs(m3.collection(db, 'users', user.uid, 'bookings'));
+          bookings = bSnap.docs.map(function(d){ return d.data(); });
+          setStatus('ok', '&#9679; Signed in as ' + user.displayName + ' — ' + bookings.length + ' booking(s) loaded');
+        } catch(e){ setStatus('ok', '&#9679; Signed in as ' + user.displayName); }
+      } else {
+        renderNavUser(null);
+        setStatus('ok', '&#9679; Connected — Sign in to view your bookings');
+      }
+    });
+
+    // Also try to load all bookings from main collection
+    try {
+      var allB = await m3.getDocs(m3.collection(db, 'bookings'));
+      if(allB.docs.length > 0) bookings = allB.docs.map(function(d){ return d.data(); });
+    } catch(e){}
+
+  } catch(e){
+    setStatus('ok', '&#9679; Connected — Using local event data');
+  }
+})();
+
+function setStatus(type, msg){
+  var bar = document.getElementById('statusBar');
+  bar.innerHTML = msg;
+  bar.className = 'status-bar' + (type === 'loading' ? ' loading' : '');
+}
+
+// ── SEND MESSAGE ──────────────────────────────────────────────
+function handleKey(e){
+  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el){
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function quickAsk(msg){
+  hideWelcome();
+  document.getElementById('inputBox').value = msg;
+  sendMessage();
+}
+
+function showCapabilities(){
+  quickAsk('What can you do? Show me all your capabilities.');
+}
+
+function hideWelcome(){
+  var w = document.getElementById('welcomeScreen');
+  if(w) w.style.display = 'none';
+}
+
+async function sendMessage(){
+  var input = document.getElementById('inputBox');
+  var msg = input.value.trim();
+  if(!msg || isTyping) return;
+  input.value = '';
+  input.style.height = 'auto';
+  hideWelcome();
+
+  addUserMsg(msg);
+  isTyping = true;
+  document.getElementById('sendBtn').disabled = true;
+  showTyping();
+
+  // Build context from real data
+  var eventsContext = EVENTS.map(function(e){
+    return e.title + ' | ' + e.category + ' | ' + e.date + ' ' + e.time + ' | ' + e.venue + ' | Rs.' + e.price + ' onwards | ' + e.seats + ' seats left | ID:' + e.id + ' | Tickets: ' + (e.tickets||[]).map(function(t){ return t.name + ' Rs.' + t.price; }).join(', ');
+  }).join('\n');
+
+  var bookingsContext = bookings.length > 0
+    ? bookings.map(function(b){ return 'Booking ID:' + (b.bookingId||b.id) + ' | ' + (b.eventName||b.event) + ' | ' + (b.ticketType||b.ticket) + ' x' + (b.qty||1) + ' | Rs.' + (b.total||0) + ' | ' + (b.date||''); }).join('\n')
+    : 'No bookings found in database.';
+
+  var systemPrompt = `You are Festora Assistant — an intelligent AI with LIVE access to Festora's event booking platform database.
+
+LIVE EVENTS IN DATABASE (fetched right now):
+${eventsContext}
+
+BOOKINGS IN DATABASE:
+${bookingsContext}
+
+WEBSITE INFO:
+- URL: https://main.d39qu7n6qbh7g3.amplifyapp.com
+- Pages: Home (index.html), Event Detail (event-detail.html?id=ID), My Tickets (my-tickets.html), Ticket (ticket.html)
+- Login: Google Sign-In
+- Payment: UPI, Credit/Debit Card, Net Banking, Wallet
+- After booking: E-pass with QR code sent by email automatically
+
+INSTRUCTIONS:
+- You have LIVE data — always refer to it specifically with exact prices, dates, venues, seats
+- When showing events, format them clearly with all details
+- When user asks to book, guide them step by step and give the direct link: event-detail.html?id=EVENT_ID
+- For bookings, show the actual booking data from the database
+- Be friendly, helpful, use emojis naturally
+- Format responses with line breaks for readability
+- If asked about specific event details, give ALL details from the database
+- Always mention seat availability and urgency if seats are low (under 100)
+- Direct users to the website pages with actual URLs when relevant`;
+
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: msg }]
+      })
+    });
+    var data = await res.json();
+    removeTyping();
+    var reply = (data.content && data.content[0] && data.content[0].text) || "Sorry, I couldn't process that. Please try again!";
+
+    // Check if we should show event cards
+    var lowerMsg = msg.toLowerCase();
+    var showCards = lowerMsg.includes('show') || lowerMsg.includes('list') || lowerMsg.includes('all events') || lowerMsg.includes('events') || lowerMsg.includes('available');
+    var categoryFilter = null;
+    if(lowerMsg.includes('music')) categoryFilter = 'music';
+    else if(lowerMsg.includes('comedy')) categoryFilter = 'comedy';
+    else if(lowerMsg.includes('festival')) categoryFilter = 'festival';
+    else if(lowerMsg.includes('sports') || lowerMsg.includes('sport')) categoryFilter = 'sports';
+    else if(lowerMsg.includes('tech')) categoryFilter = 'tech';
+
+    addBotMsg(reply, showCards ? (categoryFilter ? EVENTS.filter(function(e){ return e.category === categoryFilter; }) : EVENTS) : null);
+
+  } catch(e){
+    removeTyping();
+    addBotMsg("Sorry, I'm having trouble connecting to the AI. Please try again! 🙏", null);
+  }
+
+  isTyping = false;
+  document.getElementById('sendBtn').disabled = false;
+}
+
+// ── RENDER MESSAGES ───────────────────────────────────────────
+function addUserMsg(text){
+  var msgs = document.getElementById('messages');
+  var time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  var row = document.createElement('div');
+  row.className = 'msg-row user';
+  row.innerHTML = '<div class="msg-avatar user">&#128100;</div>' +
+    '<div class="msg-content">' +
+      '<div class="msg-bubble user">' + escHtml(text) + '</div>' +
+      '<div class="msg-time">' + time + '</div>' +
+    '</div>';
+  msgs.appendChild(row);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addBotMsg(text, events){
+  var msgs = document.getElementById('messages');
+  var time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  var row = document.createElement('div');
+  row.className = 'msg-row';
+
+  var eventsHTML = '';
+  if(events && events.length > 0){
+    eventsHTML = '<div class="chat-events">' +
+      events.map(function(e){
+        return '<a class="chat-event-card" href="event-detail.html?id=' + e.id + '">' +
+          '<div class="ce-header">' +
+            '<div class="ce-title">' + e.title + '</div>' +
+            '<div class="ce-price">&#8377;' + e.price.toLocaleString() + '</div>' +
+          '</div>' +
+          '<div class="ce-meta">' +
+            '<span>&#128197; ' + e.date + '</span>' +
+            '<span>&#128205; ' + e.venue.split(',')[0] + '</span>' +
+            '<span class="ce-badge">' + e.category + '</span>' +
+            (e.seats < 100 ? '<span style="color:#f97316">&#9888; Only ' + e.seats + ' left!</span>' : '<span>&#9679; ' + e.seats + ' seats</span>') +
+          '</div>' +
+        '</a>';
+      }).join('') +
+    '</div>';
+  }
+
+  row.innerHTML = '<div class="msg-avatar bot">&#127903;</div>' +
+    '<div class="msg-content">' +
+      '<div class="msg-bubble bot">' + formatText(text) + eventsHTML + '</div>' +
+      '<div class="msg-time">' + time + '</div>' +
+    '</div>';
+  msgs.appendChild(row);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping(){
+  var msgs = document.getElementById('messages');
+  var row = document.createElement('div');
+  row.className = 'msg-row';
+  row.id = 'typingRow';
+  row.innerHTML = '<div class="msg-avatar bot">&#127903;</div>' +
+    '<div class="msg-content">' +
+      '<div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>' +
+    '</div>';
+  msgs.appendChild(row);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping(){
+  var t = document.getElementById('typingRow');
+  if(t) t.remove();
+}
+
+function formatText(text){
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/\n/g,'<br>');
+}
+
+function escHtml(text){
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+
+<!-- AUTH MODAL -->
+<div class="auth-modal-overlay" id="authModalOverlay">
+  <div class="auth-modal">
+    <button class="auth-close" onclick="closeAuthModal()">&#10005;</button>
+    <div class="auth-logo">Festora</div>
+    <div class="auth-title">Sign In to Assistant</div>
+    <div class="auth-sub">Sign in to access your bookings,<br>tickets and personalised recommendations.</div>
+    <div class="auth-error" id="authError"></div>
+    <button class="google-btn" onclick="signInWithGoogle()">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Continue with Google
+    </button>
+    <div class="auth-note">Your bookings and tickets will be loaded automatically after sign in.</div>
+  </div>
+</div>
+
+</body>
+</html>
