@@ -348,10 +348,12 @@ function renderNavUser(user){
     };
     window._signOut = async function(){
       await m2.signOut(auth);
+      window._currentUser = null;
       bookings = [];
       setStatus('ok', '&#9679; Connected — Signed out');
     };
     m2.onAuthStateChanged(auth, async function(user){
+      window._currentUser = user;
       renderNavUser(user);
       if(user){
         closeAuthModal();
@@ -671,7 +673,22 @@ function goToStep(n){
   });
 }
 
-function goToStep2(){ goToStep(2); }
+function goToStep2(){
+  // Check if user is signed in
+  if(!window._currentUser){
+    openAuthModal();
+    addBotMsg('⚠️ Please sign in with Google first to book tickets!', null);
+    return;
+  }
+  // Auto-fill name and email from Google account
+  setTimeout(function(){
+    var nameEl = document.getElementById('bookingName');
+    var emailEl = document.getElementById('bookingEmail');
+    if(nameEl && !nameEl.value) nameEl.value = window._currentUser.displayName || '';
+    if(emailEl && !emailEl.value) emailEl.value = window._currentUser.email || '';
+  }, 100);
+  goToStep(2);
+}
 
 function goToStep3(){
   var name=document.getElementById('bookingName').value.trim();
