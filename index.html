@@ -140,6 +140,47 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .sidebar-signin-btn{width:100%;background:var(--accent);color:#fff;border:none;padding:.7rem;border-radius:.7rem;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.5rem}
 .sidebar-signin-btn:hover{background:#ff7a5a}
 
+
+/* BOOKING UI IN CHAT */
+.booking-card{background:var(--surface);border:1px solid var(--accent);border-radius:1rem;padding:1.2rem;margin-top:.5rem;width:100%}
+.booking-card-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--accent);margin-bottom:1rem;letter-spacing:.05em}
+.booking-step{display:none}
+.booking-step.active{display:block}
+.step-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem}
+.ticket-options{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem}
+.ticket-option{display:flex;align-items:center;gap:.8rem;background:var(--card);border:1px solid var(--border);border-radius:.7rem;padding:.7rem 1rem;cursor:pointer;transition:all .2s}
+.ticket-option:hover{border-color:var(--accent)}
+.ticket-option input[type=radio]{accent-color:var(--accent);width:16px;height:16px;cursor:pointer;flex-shrink:0}
+.ticket-option.selected{border-color:var(--accent);background:rgba(255,92,53,.08)}
+.ticket-option-info{flex:1}
+.ticket-option-name{font-weight:600;font-size:.88rem}
+.ticket-option-desc{font-size:.75rem;color:var(--muted)}
+.ticket-option-price{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--accent)}
+.qty-row{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
+.qty-btn{width:32px;height:32px;border-radius:50%;background:var(--card);border:1px solid var(--border);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.qty-btn:hover{border-color:var(--accent);color:var(--accent)}
+.qty-display{font-size:1.1rem;font-weight:700;min-width:30px;text-align:center}
+.booking-summary{background:var(--card);border-radius:.7rem;padding:.8rem 1rem;margin-bottom:1rem}
+.booking-summary-row{display:flex;justify-content:space-between;font-size:.82rem;padding:.25rem 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.booking-summary-row:last-child{border-bottom:none;font-weight:700;font-size:.9rem;color:var(--accent)}
+.booking-btn{width:100%;background:var(--accent);color:#fff;border:none;padding:.8rem;border-radius:.7rem;font-size:.9rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:.3rem}
+.booking-btn:hover{background:#ff7a5a;transform:translateY(-1px)}
+.booking-btn.secondary{background:transparent;border:1px solid var(--border);color:var(--muted);margin-top:.5rem}
+.booking-btn.secondary:hover{border-color:var(--accent);color:var(--accent);transform:none}
+.booking-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.step-indicator{display:flex;gap:.4rem;margin-bottom:1rem}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s}
+.step-dot.active{background:var(--accent);width:20px;border-radius:4px}
+.step-dot.done{background:#4ade80}
+.booking-success{text-align:center;padding:1rem 0}
+.booking-success-icon{font-size:2.5rem;margin-bottom:.5rem}
+.booking-success-title{font-family:'DM Serif Display',serif;font-size:1.3rem;margin-bottom:.3rem}
+.booking-success-sub{font-size:.82rem;color:var(--muted);margin-bottom:1rem}
+.booking-success-id{background:var(--card);border-radius:.5rem;padding:.5rem 1rem;font-size:.78rem;color:var(--accent);font-weight:600;display:inline-block}
+.user-info-row{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem}
+.user-info-input{background:var(--card);border:1px solid var(--border);border-radius:.6rem;padding:.6rem .9rem;color:var(--text);font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+.user-info-input:focus{border-color:var(--accent)}
+
 </style>
 </head>
 <body>
@@ -406,18 +447,17 @@ WEBSITE INFO:
 
 INSTRUCTIONS:
 - You have LIVE data — always refer to it specifically with exact prices, dates, venues, seats
-- When showing events, format them clearly with all details
-- When user asks to book, guide them step by step and give the direct link: event-detail.html?id=EVENT_ID
+- When user says "book [event name]" or "I want to book", reply with: "Sure! I'll open the booking form for [event name] right here in chat!" and include the event ID like (ID:ev1) somewhere in your reply
 - For bookings, show the actual booking data from the database
 - Be friendly, helpful, use emojis naturally
 - Format responses with line breaks for readability
 - If asked about specific event details, give ALL details from the database
 - Always mention seat availability and urgency if seats are low (under 100)
-- Direct users to the website pages with actual URLs when relevant`;
+- When showing event cards, tell users they can say "book [event name]" to book right here in chat`;
 
   try {
-    var GEMINI_KEY = 'AIzaSyCn2Mq9k7Q9B1Ik4BSo7dEhVIBYkBlP_VQ';
-    var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=' + GEMINI_KEY, {
+    var GEMINI_KEY = 'AIzaSyAGMTT9twidgatXCtBOEbNe6WOfT0F2mrA';
+    var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_KEY, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -438,8 +478,20 @@ INSTRUCTIONS:
       reply = "Sorry, I couldn't process that. Please try again!";
     }
 
-    // Check if we should show event cards
+    // Check if user wants to book - show booking card
     var lowerMsg = msg.toLowerCase();
+    var bookMatch = lowerMsg.match(/book.*?(ev\d+|arijit|sunburn|zakir|lollapalooza|ipl|google)/i) ||
+                    (lowerMsg.includes('book') && lowerMsg.includes('ticket'));
+
+    // Check if reply contains a booking trigger event ID
+    var replyEventId = null;
+    EVENTS.forEach(function(e){
+      if(reply.toLowerCase().includes(e.id) || reply.toLowerCase().includes(e.title.toLowerCase().substring(0,8))){
+        if(lowerMsg.includes('book')) replyEventId = e.id;
+      }
+    });
+
+    // Check if we should show event cards
     var showCards = lowerMsg.includes('show') || lowerMsg.includes('list') || lowerMsg.includes('all events') || lowerMsg.includes('events') || lowerMsg.includes('available');
     var categoryFilter = null;
     if(lowerMsg.includes('music')) categoryFilter = 'music';
@@ -449,6 +501,18 @@ INSTRUCTIONS:
     else if(lowerMsg.includes('tech')) categoryFilter = 'tech';
 
     addBotMsg(reply, showCards ? (categoryFilter ? EVENTS.filter(function(e){ return e.category === categoryFilter; }) : EVENTS) : null);
+
+    // Show booking card if user wants to book a specific event
+    if(replyEventId){
+      setTimeout(function(){ showBookingCard(replyEventId); }, 400);
+    } else if(lowerMsg.includes('book') && !showCards){
+      // Find event from message
+      var foundEv = EVENTS.find(function(e){
+        return lowerMsg.includes(e.title.toLowerCase().split(' ')[0].toLowerCase()) ||
+               lowerMsg.includes(e.id);
+      });
+      if(foundEv) setTimeout(function(){ showBookingCard(foundEv.id); }, 400);
+    }
 
   } catch(e){
     removeTyping();
@@ -538,6 +602,127 @@ function formatText(text){
 function escHtml(text){
   return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+
+// ── INLINE BOOKING SYSTEM ────────────────────────────────────
+var currentBooking = {};
+
+function showBookingCard(eventId){
+  var ev = EVENTS.find(function(e){ return e.id === eventId; });
+  if(!ev){ addBotMsg("Sorry, I couldn't find that event!", null); return; }
+  currentBooking = { event: ev, ticketIndex: 0, qty: 1 };
+  var msgs = document.getElementById('messages');
+  var row = document.createElement('div');
+  row.className = 'msg-row';
+  row.innerHTML = '<div class="msg-avatar bot">&#127903;</div><div class="msg-content" style="max-width:90%"><div class="msg-bubble bot" style="padding:0;overflow:hidden;width:100%">' + renderBookingCard(ev) + '</div></div>';
+  msgs.appendChild(row);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function renderBookingCard(ev){
+  var ticketsHtml = ev.tickets.map(function(t,i){
+    return '<label class="ticket-option'+(i===0?' selected':'')+'" onclick="selectTicket('+i+')" id="topt_'+i+'"><input type="radio" name="ticketType" value="'+i+'" '+(i===0?'checked':'')+'/><div class="ticket-option-info"><div class="ticket-option-name">'+t.name+'</div><div class="ticket-option-desc">'+(t.desc||'')+'</div></div><div class="ticket-option-price">&#8377;'+t.price.toLocaleString()+'</div></label>';
+  }).join('');
+  return '<div class="booking-card">'+
+    '<div class="booking-card-title">&#127903; Book: '+ev.title+'</div>'+
+    '<div class="step-indicator"><div class="step-dot active" id="sdot1"></div><div class="step-dot" id="sdot2"></div><div class="step-dot" id="sdot3"></div></div>'+
+    '<div class="booking-step active" id="bstep1">'+
+      '<div class="step-label">Step 1 — Select Ticket Type</div>'+
+      '<div class="ticket-options">'+ticketsHtml+'</div>'+
+      '<div class="step-label">Quantity</div>'+
+      '<div class="qty-row"><button class="qty-btn" onclick="changeQty(-1)">&#8722;</button><div class="qty-display" id="qtyDisplay">1</div><button class="qty-btn" onclick="changeQty(1)">&#43;</button><span style="font-size:.8rem;color:var(--muted);margin-left:.5rem">&#215; &#8377;<span id="unitPrice">'+ev.tickets[0].price.toLocaleString()+'</span> each</span></div>'+
+      '<button class="booking-btn" onclick="goToStep2()">Continue &#8594;</button>'+
+    '</div>'+
+    '<div class="booking-step" id="bstep2">'+
+      '<div class="step-label">Step 2 — Your Details</div>'+
+      '<div class="user-info-row"><input class="user-info-input" id="bookingName" placeholder="Full Name *"/><input class="user-info-input" id="bookingEmail" placeholder="Email Address *" type="email"/><input class="user-info-input" id="bookingPhone" placeholder="Phone Number" type="tel"/></div>'+
+      '<button class="booking-btn" onclick="goToStep3()">Review Order &#8594;</button>'+
+      '<button class="booking-btn secondary" onclick="goToStep(1)">&#8592; Back</button>'+
+    '</div>'+
+    '<div class="booking-step" id="bstep3">'+
+      '<div class="step-label">Step 3 — Confirm & Pay</div>'+
+      '<div class="booking-summary" id="bookingSummary"></div>'+
+      '<button class="booking-btn" onclick="confirmBooking()">&#9889; Confirm & Book Now</button>'+
+      '<button class="booking-btn secondary" onclick="goToStep(2)">&#8592; Back</button>'+
+    '</div>'+
+    '<div class="booking-step" id="bstep4">'+
+      '<div class="booking-success"><div class="booking-success-icon">&#127881;</div><div class="booking-success-title">Booking Confirmed!</div><div class="booking-success-sub">Your e-pass is ready. Check your email!</div><div class="booking-success-id" id="bookingSuccessId"></div><br/><br/><a id="viewTicketBtn" href="#" class="booking-btn" style="display:inline-block;text-decoration:none;text-align:center">View E-Pass &#127903;</a></div>'+
+    '</div>'+
+  '</div>';
+}
+
+function selectTicket(index){
+  currentBooking.ticketIndex = index;
+  document.querySelectorAll('.ticket-option').forEach(function(el,i){
+    el.classList.toggle('selected', i===index);
+    el.querySelector('input').checked = (i===index);
+  });
+  document.getElementById('unitPrice').textContent = currentBooking.event.tickets[index].price.toLocaleString();
+}
+
+function changeQty(delta){
+  currentBooking.qty = Math.max(1, Math.min(10, (currentBooking.qty||1)+delta));
+  document.getElementById('qtyDisplay').textContent = currentBooking.qty;
+}
+
+function goToStep(n){
+  [1,2,3,4].forEach(function(i){
+    var s=document.getElementById('bstep'+i); if(s) s.classList.toggle('active',i===n);
+    var d=document.getElementById('sdot'+i); if(d){d.classList.toggle('active',i===n);d.classList.toggle('done',i<n);}
+  });
+}
+
+function goToStep2(){ goToStep(2); }
+
+function goToStep3(){
+  var name=document.getElementById('bookingName').value.trim();
+  var email=document.getElementById('bookingEmail').value.trim();
+  if(!name||!email){alert('Please fill in your name and email!');return;}
+  currentBooking.name=name; currentBooking.email=email;
+  currentBooking.phone=document.getElementById('bookingPhone').value.trim();
+  var ticket=currentBooking.event.tickets[currentBooking.ticketIndex];
+  currentBooking.total=ticket.price*currentBooking.qty;
+  currentBooking.ticketType=ticket.name;
+  var ev=currentBooking.event;
+  document.getElementById('bookingSummary').innerHTML=
+    '<div class="booking-summary-row"><span>Event</span><span>'+ev.title+'</span></div>'+
+    '<div class="booking-summary-row"><span>Date</span><span>'+ev.date+' '+ev.time+'</span></div>'+
+    '<div class="booking-summary-row"><span>Venue</span><span>'+ev.venue.split(',')[0]+'</span></div>'+
+    '<div class="booking-summary-row"><span>Ticket</span><span>'+ticket.name+'</span></div>'+
+    '<div class="booking-summary-row"><span>Quantity</span><span>'+currentBooking.qty+'</span></div>'+
+    '<div class="booking-summary-row"><span>Attendee</span><span>'+name+'</span></div>'+
+    '<div class="booking-summary-row"><span>Total</span><span>&#8377;'+currentBooking.total.toLocaleString()+'</span></div>';
+  goToStep(3);
+}
+
+async function confirmBooking(){
+  var btn=document.querySelector('#bstep3 .booking-btn');
+  btn.disabled=true; btn.textContent='Processing...';
+  var bookingId='FES'+Date.now().toString().slice(-8);
+  currentBooking.bookingId=bookingId;
+  try{
+    var m1=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    var m3=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    var apps=m1.getApps();
+    if(apps.length>0){
+      var db=m3.getFirestore(apps[0]);
+      var ev=currentBooking.event;
+      await m3.addDoc(m3.collection(db,'bookings'),{
+        bookingId:bookingId,eventId:ev.id,eventName:ev.title,
+        eventDate:ev.date,eventTime:ev.time,eventVenue:ev.venue,
+        ticketType:currentBooking.ticketType,qty:currentBooking.qty,
+        total:currentBooking.total,attendeeName:currentBooking.name,
+        attendeeEmail:currentBooking.email,attendeePhone:currentBooking.phone||'',
+        bookedAt:new Date().toISOString(),source:'chat-assistant'
+      });
+    }
+  }catch(e){console.log('Firestore:',e);}
+  localStorage.setItem('festora_last_booking',JSON.stringify({bookingId:bookingId,eventName:currentBooking.event.title,ticketType:currentBooking.ticketType,qty:currentBooking.qty,total:currentBooking.total,attendeeName:currentBooking.name,attendeeEmail:currentBooking.email}));
+  document.getElementById('bookingSuccessId').textContent='Booking ID: '+bookingId;
+  document.getElementById('viewTicketBtn').href='https://main.d39qu7n6qbh7g3.amplifyapp.com/ticket.html?booking='+bookingId;
+  goToStep(4);
+  setTimeout(function(){ addBotMsg('🎉 Booking confirmed! Your ID is **'+bookingId+'**. Enjoy the show! 🎊',null); },500);
+}
+
 </script>
 
 <!-- AUTH MODAL -->
